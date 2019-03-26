@@ -1,0 +1,268 @@
+RAID	冗余磁盘阵列 
+
+	作用：
+		1、提升数据读写速度
+		2、提高数据可靠性 
+
+	device mapper 设备映射 
+	
+
+RAID级别：----  raid 2.0 技术 
+
+	1、RAID-0	条带 
+	
+		至少两块硬盘
+		把文件拆分分散存储不同的设备上，提高文件的读写速度 
+		缺少可靠性
+		
+	2、RAID-1	镜像
+	
+		至少两块硬盘
+		将文件镜像成多份，提高数据可靠性 
+		浪费一半的存储空间
+
+	
+	3、RAID-5	
+	
+		至少三块硬盘 
+		将数据分散存储不同的设备，同时会存储数据的校验码
+		提高文件的读写速度，提高可靠性 
+		最多只允许损坏一块硬盘 
+		支持热备盘(hot spare), 尽可能减少故障修复的时间
+		
+		
+	4、RAID-10
+		至少4块硬盘 
+		提高数据可靠性、读写速度 
+		
+		最多允许两块不同盘架的硬盘损坏
+
+	5、RAID-01
+	
+		至少4块硬盘 
+		提高数据可靠性、读写速度 
+
+
+	6、RAID-6
+		允许最多两块盘同时损坏
+
+
+
+
+示例： 
+
+1、创建raid-5 
+
+	[root@node01 ~]# mdadm -C /dev/md1 -n 3 -l 5 /dev/vd{h,i,j}
+
+	查看raid设备状态 
+
+	[root@node01 ~]# cat /proc/mdstat 
+	Personalities : [raid6] [raid5] [raid4] 
+	md1 : active raid5 vdj[3] vdi[1] vdh[0]
+		  4190208 blocks super 1.2 level 5, 512k chunk, algorithm 2 [3/3] [UUU]
+		  
+	unused devices: <none>
+
+
+2、使用raid设备
+
+	[root@node01 ~]# mkfs.ext4 /dev/md1 
+
+	[root@node01 ~]# mkdir /opt/test
+	[root@node01 ~]# vim /etc/fstab 
+
+		/dev/md1	/opt/test	ext4	defaults	0 0
+
+
+	[root@node01 ~]# mount -a
+	[root@node01 ~]# 
+
+	[root@node01 ~]# touch /opt/test/{1..10}.mp3
+	[root@node01 ~]# ls /opt/test/
+	10.mp3  1.mp3  2.mp3  3.mp3  4.mp3  5.mp3  6.mp3  7.mp3  8.mp3  9.mp3  lost+found
+
+
+3、查看raid设备状态 
+
+	[root@node01 ~]# mdadm -Ds /dev/md1 
+	ARRAY /dev/md1 metadata=1.2 name=node01:1 UUID=48187e69:daa74811:20c29c32:8252413d
+
+	[root@node01 ~]# mdadm -D /dev/md1 
+	/dev/md1:
+			   Version : 1.2
+		 Creation Time : Wed Dec 12 11:04:29 2018
+			Raid Level : raid5
+			Array Size : 4190208 (4.00 GiB 4.29 GB)
+		 Used Dev Size : 2095104 (2046.00 MiB 2145.39 MB)
+		  Raid Devices : 3
+		 Total Devices : 3
+		   Persistence : Superblock is persistent
+
+		   Update Time : Wed Dec 12 11:08:14 2018
+				 State : clean 
+		Active Devices : 3
+	   Working Devices : 3
+		Failed Devices : 0
+		 Spare Devices : 0
+
+				Layout : left-symmetric
+			Chunk Size : 512K
+
+	Consistency Policy : resync
+
+				  Name : node01:1  (local to host node01)
+				  UUID : 48187e69:daa74811:20c29c32:8252413d
+				Events : 18
+
+		Number   Major   Minor   RaidDevice State
+		   0     252      112        0      active sync   /dev/vdh
+		   1     252      128        1      active sync   /dev/vdi
+		   3     252      144        2      active sync   /dev/vdj
+
+
+
+4、添加热备盘(hot spare)
+
+	[root@node01 ~]# mdadm /dev/md1 -a /dev/vdk
+	mdadm: added /dev/vdk
+
+	[root@node01 ~]# cat /proc/mdstat 
+	Personalities : [raid6] [raid5] [raid4] 
+	md1 : active raid5 vdk[4](S) vdj[3] vdi[1] vdh[0]
+		  4190208 blocks super 1.2 level 5, 512k chunk, algorithm 2 [3/3] [UUU]
+		  
+
+		（S）：标识为热备盘
+		
+	[root@node01 ~]# mdadm -D /dev/md1 
+	/dev/md1:
+			   Version : 1.2
+		 Creation Time : Wed Dec 12 11:04:29 2018
+			Raid Level : raid5
+			Array Size : 4190208 (4.00 GiB 4.29 GB)
+		 Used Dev Size : 2095104 (2046.00 MiB 2145.39 MB)
+		  Raid Devices : 3
+		 Total Devices : 4
+		   Persistence : Superblock is persistent
+
+		   Update Time : Wed Dec 12 11:14:15 2018
+				 State : clean 
+		Active Devices : 3
+	   Working Devices : 4
+		Failed Devices : 0
+		 Spare Devices : 1
+
+				Layout : left-symmetric
+			Chunk Size : 512K
+
+	Consistency Policy : resync
+
+				  Name : node01:1  (local to host node01)
+				  UUID : 48187e69:daa74811:20c29c32:8252413d
+				Events : 19
+
+		Number   Major   Minor   RaidDevice State
+		   0     252      112        0      active sync   /dev/vdh
+		   1     252      128        1      active sync   /dev/vdi
+		   3     252      144        2      active sync   /dev/vdj
+
+		   4     252      160        -      spare   /dev/vdk
+
+
+
+5、模拟硬盘故障 
+
+	[root@node01 ~]# mdadm /dev/md1 -f /dev/vdi  
+	mdadm: set /dev/vdi faulty in /dev/md1
+
+	[root@node01 ~]# cat /proc/mdstat 
+	Personalities : [raid6] [raid5] [raid4] 
+	md1 : active raid5 vdk[4] vdj[3] vdi[1](F) vdh[0]
+		  4190208 blocks super 1.2 level 5, 512k chunk, algorithm 2 [3/2] [U_U]
+		  [====>................]  recovery = 24.9% (523792/2095104) finish=0.6min speed=40291K/sec
+      
+	数据恢复完成后的状态：
+	
+	[root@node01 ~]# cat /proc/mdstat 
+	Personalities : [raid6] [raid5] [raid4] 
+	md1 : active raid5 vdk[4] vdj[3] vdi[1](F) vdh[0]
+		  4190208 blocks super 1.2 level 5, 512k chunk, algorithm 2 [3/3] [UUU]
+
+
+
+
+6、移除故障盘
+
+	[root@node01 ~]# mdadm /dev/md1 -r /dev/vdi 
+	mdadm: hot removed /dev/vdi from /dev/md1
+	
+	[root@node01 ~]# 
+	[root@node01 ~]# cat /proc/mdstat 
+	Personalities : [raid6] [raid5] [raid4] 
+	md1 : active raid5 vdk[4] vdj[3] vdh[0]
+		  4190208 blocks super 1.2 level 5, 512k chunk, algorithm 2 [3/3] [UUU]
+		  
+	unused devices: <none>
+
+
+7、再次添加硬盘、新添加的硬盘会成为新的热备盘 
+
+	[root@node01 ~]# mdadm /dev/md1 -a /dev/vdi
+	mdadm: added /dev/vdi
+	[root@node01 ~]# 
+	[root@node01 ~]# cat /proc/mdstat 
+	Personalities : [raid6] [raid5] [raid4] 
+	md1 : active raid5 vdi[5](S) vdk[4] vdj[3] vdh[0]
+		  4190208 blocks super 1.2 level 5, 512k chunk, algorithm 2 [3/3] [UUU]
+		  
+	unused devices: <none>
+
+
+
+
+
+raid实际应用：
+
+1、实体服务器 
+
+	1) 装系统，系统必须RAID设备
+		
+	2) 磁盘阵列柜
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,421 @@
+lvm ---- Logical Volume Management 逻辑卷管理 
+
+	优势：
+		1、在线扩展/缩减存储空间
+		2、支持快照
+		
+	Device Mapper设备映射
+	
+	lvm组织方式：
+		
+		真实存储设备 --- pv(物理卷) --- vg(卷组) --- lv(逻辑卷) ---- 创建文件系统 ---  挂载使用
+		
+			真实存储设备：裸设备
+			
+			
+相关命令：
+
+1、pv(物理卷)
+
+	1) 查看物理卷
+		# pvscan 
+
+	2) 创建物理卷
+	
+		# pvcreate disk/partition
+		
+	3) 删除物理卷
+		
+		# pvremove pv_name
+
+
+
+2、vg卷组 
+
+	1) 查看卷组
+	
+		[root@node01 ~]# vgscan 
+
+		[root@node01 ~]# vgdisplay vg_name
+		
+	
+	2) 创建卷组 
+	
+		# vgcreate vg_name pv_name pv_name .... 
+
+	3) 删除卷组
+	
+		# vgremove vg_name 
+		
+
+3、lv逻辑卷
+
+	1) 查看逻辑卷
+	
+		[root@node01 ~]# lvscan 
+		  ACTIVE            '/dev/centos/swap' [2.00 GiB] inherit
+		  ACTIVE            '/dev/centos/root' [<17.00 GiB] inherit
+
+		[root@node01 ~]# lvdisplay /dev/centos/swap 
+
+
+	2) 创建逻辑卷
+	
+		# lvcreate -L size -n lv_name vg_name 
+		
+			# lvcreate -L 400G -n lv01 vg01 
+			
+				/dev/vg01/lv01 
+		
+
+	3) 删除逻辑卷
+	
+		# lvremove /dev/vg01/lv01 
+		
+
+
+
+示例01：创建逻辑卷/dev/vg01/lv01   
+
+1、创建物理卷
+
+	[root@node01 ~]# pvcreate /dev/vdd /dev/vde
+	  Physical volume "/dev/vdd" successfully created.
+	  Physical volume "/dev/vde" successfully created.
+	[root@node01 ~]# pvscan 
+	  PV /dev/vda2   VG centos          lvm2 [<19.00 GiB / 0    free]
+	  PV /dev/vdd                       lvm2 [4.00 GiB]
+	  PV /dev/vde                       lvm2 [4.00 GiB]
+	  Total: 3 [<27.00 GiB] / in use: 1 [<19.00 GiB] / in no VG: 2 [8.00 GiB]
+
+
+2、创建卷组 
+
+	[root@node01 ~]# vgcreate vg01 /dev/vdd /dev/vde
+	  Volume group "vg01" successfully created
+	  
+	[root@node01 ~]# vgdisplay vg01 
+	  --- Volume group ---
+	  VG Name               vg01
+	  System ID             
+	  Format                lvm2
+	  Metadata Areas        2
+	  Metadata Sequence No  1
+	  VG Access             read/write
+	  VG Status             resizable
+	  MAX LV                0
+	  Cur LV                0
+	  Open LV               0
+	  Max PV                0
+	  Cur PV                2
+	  Act PV                2
+	  VG Size               7.99 GiB
+	  PE Size               4.00 MiB
+	  Total PE              2046
+	  Alloc PE / Size       0 / 0   
+	  Free  PE / Size       2046 / 7.99 GiB
+	  VG UUID               ikEkmI-aoMk-W0JR-3iV2-xzwT-xlj5-MyeBCx
+   
+
+3、创建逻辑卷
+
+	[root@node01 ~]# lvcreate -L 2G -n lv01 vg01
+	  Logical volume "lv01" created.
+	[root@node01 ~]# lvscan 
+	  ACTIVE            '/dev/centos/swap' [2.00 GiB] inherit
+	  ACTIVE            '/dev/centos/root' [<17.00 GiB] inherit
+	  ACTIVE            '/dev/vg01/lv01' [2.00 GiB] inherit
+
+
+4、创建文件系统、挂载使用 
+
+	[root@node01 ~]# mkfs -t ext4 /dev/vg01/lv01
+
+	[root@node01 ~]# mkdir /opt/mysqldata
+	[root@node01 ~]# vim /etc/fstab 
+
+		/dev/vg01/lv01	/opt/mysqldata	ext4	defaults	0 0
+
+	[root@node01 ~]# mount -a
+
+
+
+示例02：创建逻辑卷/dev/vg02/lv01大小为800M, 指定其PE大小为16M， 
+
+1、创建物理卷 
+
+	[root@node01 ~]# pvcreate /dev/vdf
+
+
+2、创建vg02卷组，并指定PE为16M
+
+	[root@node01 ~]# vgcreate -s 16 vg02 /dev/vdf			// -s指定PE大小，单位默认为MB
+	  Volume group "vg02" successfully created
+	  
+	[root@node01 ~]# vgdisplay vg02 
+	  --- Volume group ---
+	  VG Name               vg02
+	  System ID             
+	  Format                lvm2
+	  Metadata Areas        1
+	  Metadata Sequence No  1
+	  VG Access             read/write
+	  VG Status             resizable
+	  MAX LV                0
+	  Cur LV                0
+	  Open LV               0
+	  Max PV                0
+	  Cur PV                1
+	  Act PV                1
+	  VG Size               3.98 GiB
+	  PE Size               16.00 MiB			// PE大小 
+	  Total PE              255
+	  Alloc PE / Size       0 / 0   
+	  Free  PE / Size       255 / 3.98 GiB
+	  VG UUID               1oW6VX-VnNP-29Z6-U2FA-3EWH-1fr8-acPlFW
+	   
+
+3、创建逻辑卷
+
+	[root@node01 ~]# lvcreate -l 50 -n lv01 vg02
+
+	[root@node01 ~]# lvscan 
+	  ACTIVE            '/dev/centos/swap' [2.00 GiB] inherit
+	  ACTIVE            '/dev/centos/root' [<17.00 GiB] inherit
+	  ACTIVE            '/dev/vg01/lv01' [2.00 GiB] inherit
+	  ACTIVE            '/dev/vg02/lv01' [800.00 MiB] inherit
+	  
+	[root@node01 ~]# lvdisplay /dev/vg02/lv01 
+	  --- Logical volume ---
+	  LV Path                /dev/vg02/lv01
+	  LV Name                lv01
+	  VG Name                vg02
+	  LV UUID                8Th7oL-ki0K-ZrNx-LHD8-deQ0-UK3x-dHjLpr
+	  LV Write Access        read/write
+	  LV Creation host, time node01, 2018-12-11 13:58:24 +0800
+	  LV Status              available
+	  # open                 0
+	  LV Size                800.00 MiB
+	  Current LE             50
+	  Segments               1
+	  Allocation             inherit
+	  Read ahead sectors     auto
+	  - currently set to     8192
+	  Block device           253:3
+	   
+	[root@node01 ~]# 
+
+
+4、创建文件系统、挂载使用
+
+
+
+
+
+
+
+
+
+
+扩展逻辑卷的存储空间
+
+	步骤：
+		1、扩展逻辑卷的物理边界
+		2、扩展文件系统 
+			resize2fs		ext4/ext3/ext2 
+			xfs_growfs		xfs 
+
+示例01： 扩展/dev/vg01/lv01到5G
+
+	resize2fs	---->  只适用于ext4, ext3, ext2
+
+	1、确保卷组有足够的剩余空间
+
+	2、扩展物理边界 
+
+		[root@node01 ~]# lvextend -L +3G /dev/vg01/lv01 
+		
+		[root@node01 ~]# lvscan 
+		  ACTIVE            '/dev/centos/swap' [2.00 GiB] inherit
+		  ACTIVE            '/dev/centos/root' [<17.00 GiB] inherit
+		  ACTIVE            '/dev/vg01/lv01' [5.00 GiB] inherit
+
+
+	3、扩展文件系统 
+
+		[root@node01 ~]# resize2fs /dev/vg01/lv01 
+
+
+	4、查看原有数据 
+	
+		[root@node01 ~]# ls /opt/mysqldata/
+		10.sql  1.sql  2.sql  3.sql  4.sql  5.sql  6.sql  7.sql  8.sql  9.sql  lost+found
+
+
+
+示例02：将/dev/vg02/lv01扩展到1G	(xfs)
+
+	[root@node01 ~]# lvextend -L +200M /dev/vg02/lv01 
+
+	[root@node01 ~]# lvscan 
+	  ACTIVE            '/dev/centos/swap' [2.00 GiB] inherit
+	  ACTIVE            '/dev/centos/root' [<17.00 GiB] inherit
+	  ACTIVE            '/dev/vg01/lv01' [5.00 GiB] inherit
+	  ACTIVE            '/dev/vg02/lv01' [1008.00 MiB] inherit
+
+
+	[root@node01 ~]# xfs_growfs /dev/vg02/lv01 
+
+	[root@node01 ~]# df -hT | grep webdata
+	/dev/mapper/vg02-lv01   xfs      1005M   33M  973M   4% /opt/webdata
+
+
+
+示例03：将逻辑卷/dev/vg01/lv01扩展到10G
+
+1、扩展卷组 
+
+	[root@node01 ~]# pvcreate /dev/vdg
+	
+	[root@node01 ~]# vgextend vg01 /dev/vdg
+	
+	[root@node01 ~]# vgdisplay vg01 
+	  --- Volume group ---
+	  VG Name               vg01
+	  System ID             
+	  Format                lvm2
+	  Metadata Areas        3
+	  Metadata Sequence No  4
+	  VG Access             read/write
+	  VG Status             resizable
+	  MAX LV                0
+	  Cur LV                1
+	  Open LV               1
+	  Max PV                0
+	  Cur PV                3
+	  Act PV                3
+	  VG Size               <27.99 GiB
+	  PE Size               4.00 MiB
+	  Total PE              7165
+	  Alloc PE / Size       1280 / 5.00 GiB
+	  Free  PE / Size       5885 / <22.99 GiB
+	  VG UUID               ikEkmI-aoMk-W0JR-3iV2-xzwT-xlj5-MyeBCx
+   
+2、扩展逻辑卷
+
+
+
+
+
+
+
+
+
+
+缩减逻辑卷空间
+
+	注意事项：
+		1、备份数据
+		2、卸载的状态
+		3、先缩减文件系统，再缩减物理边界 
+		
+		
+示例：缩减/dev/vg01/lv01的空间到2G  
+
+1、备份数据 
+
+	[root@node01 ~]# mkdir /backup
+	[root@node01 ~]# cd /opt/
+	[root@node01 opt]# tar czf /backup/mysqldata_$(date +%F).tar.gz mysqldata/
+
+
+2、卸载设备
+
+	[root@node01 opt]# umount /dev/vg01/lv01 
+
+
+3、检测文件系统状态 
+
+	[root@node01 ~]# e2fsck -f /dev/vg01/lv01 
+	e2fsck 1.42.9 (28-Dec-2013)
+	Pass 1: Checking inodes, blocks, and sizes
+	Pass 2: Checking directory structure
+	Pass 3: Checking directory connectivity
+	Pass 4: Checking reference counts
+	Pass 5: Checking group summary information
+	/dev/vg01/lv01: 21/655360 files (0.0% non-contiguous), 59823/2621440 blocks
+
+
+4、缩减文件系统 
+
+	//将文件系统缩减到2G
+	
+	[root@node01 ~]# resize2fs  /dev/vg01/lv01 2G
+
+
+5、缩减物理边界 
+
+	[root@node01 ~]# lvreduce -L -8G /dev/vg01/lv01 
+	  WARNING: Reducing active logical volume to 2.00 GiB.
+	  THIS MAY DESTROY YOUR DATA (filesystem etc.)
+	Do you really want to reduce vg01/lv01? [y/n]: y
+	  Size of logical volume vg01/lv01 changed from 10.00 GiB (2560 extents) to 2.00 GiB (512 extents).
+	  Logical volume vg01/lv01 successfully resized.
+	[root@node01 ~]# 
+
+	[root@node01 ~]# lvscan 
+	  ACTIVE            '/dev/centos/swap' [2.00 GiB] inherit
+	  ACTIVE            '/dev/centos/root' [<17.00 GiB] inherit
+	  ACTIVE            '/dev/vg01/lv01' [2.00 GiB] inherit
+
+		
+6、重新挂载，验证数据 
+
+		
+		
+		
+		
+		
+		
+快照 snapshot
+
+	作用：备份数据
+		
+	# lvcreate -s -p r -L size -n 快照名称 逻辑卷名称  	
+	
+		# lvcreate -s -p r -L 500M -n s1 /dev/vg01/lv01 
+	
+		-s： snapshot 快照 
+		-p r：设置只读 
+		-L：设置在数据备份完成前，允许原逻辑卷最大的数据变化量
+		
+		
+		
+示例：创建快照，备份数据 
+
+1、创建快照 
+
+	[root@node01 ~]# lvcreate -s -p r -L 200M -n s1 /dev/vg01/lv01
+
+	[root@node01 ~]# lvscan 
+	  ACTIVE            '/dev/centos/swap' [2.00 GiB] inherit
+	  ACTIVE            '/dev/centos/root' [<17.00 GiB] inherit
+	  ACTIVE   Original '/dev/vg01/lv01' [2.00 GiB] inherit
+	  ACTIVE   Snapshot '/dev/vg01/s1' [200.00 MiB] inherit
+	  ACTIVE            '/dev/vg02/lv01' [1008.00 MiB] inherit
+
+
+2、挂载快照、备份数据 
+
+	[root@node01 ~]# mount /dev/vg01/s1 /mnt/
+
+	[root@node01 ~]# tar czf /backup/mnt_$(date +%F).tar.gz /mnt/
+
+		
+		
+3、卸载快照，删除快照 
+
+	[root@node01 ~]# umount /dev/vg01/s1 
+	[root@node01 ~]# lvremove -f /dev/vg01/s1
+
+

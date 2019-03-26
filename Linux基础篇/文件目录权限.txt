@@ -1,0 +1,255 @@
+文件目录权限 
+
+常规权限：
+
+	r  4   w  2   x   1
+		r	读
+		w	写
+		x	执行 
+		
+	文件： 
+		r:  查看文件内容(cat/head/tail/more/less/grep)
+		w:  修改文件内容(vim)
+		x:  可执行文件
+	
+	目录：
+		r: 查看目录下的文件(ls)
+		w: 对目录下的文件进行修改(创建、重命名、删除)
+		x: 切换到目录(cd)
+
+文件权限：
+
+	[root@node01 ~]# ls -l /etc/fstab 
+	-rw-r--r--. 1 root root 465 9月  20 16:44 /etc/fstab
+	
+		644
+
+
+目录权限：
+
+	[root@node01 ~]# ls -ldh /etc/
+	drwxr-xr-x. 76 root root 8.0K 12月  6 13:46 /etc/
+
+		755
+		
+		
+1、修改权限
+
+# chmod {ugoa}{+-=}{rwx} 文件名称 
+	
+	u: user  	属主用户的权限
+	g: group	属组用户的权限
+	o: other    其他用户 
+	a: all		所有
+	
+	[root@node01 ~]# chmod u-w /tmp/1.txt 
+	[root@node01 ~]# chmod u+x /tmp/1.txt
+	[root@node01 ~]# chmod u=w /tmp/1.txt
+	
+	[root@node01 ~]# chmod g+wx /tmp/2.txt 
+	[root@node01 ~]# chmod o-r /tmp/2.txt
+	[root@node01 ~]# chmod a+x /tmp/3.txt 
+
+	[root@node01 ~]# chmod u-w,o-r,g+x /tmp/4.txt 
+
+	
+# chmod mnnn 文件名称 
+
+	[root@node01 ~]# chmod 600 /tmp/5.txt 
+	[root@node01 ~]# ls -l /tmp/5.txt
+	-rw------- 1 root root 0 12月  6 13:55 /tmp/5.txt
+	[root@node01 ~]# 
+	[root@node01 ~]# chmod 000 /tmp/6.txt 
+
+	数字m：
+		特殊权限 
+	
+
+2、修改文件所属 
+
+	a. 修改文件属主、属组
+	
+	# chown 用户名[.用户组名]  文件名称 
+
+		[root@node01 ~]# chown martin.caiwu /tmp/1.txt 
+		[root@node01 ~]# ls -l /tmp/1.txt
+		--w-r--r-- 1 martin caiwu 0 12月  6 13:55 /tmp/1.txt
+
+		[root@node01 ~]# chown martin /tmp/2.txt 
+
+
+	b. 修改文件属组 
+	
+		[root@node01 ~]# chgrp caiwu /tmp/3.txt 
+		[root@node01 ~]# ls -l /tmp/3.txt
+		-rwxr-xr-x 1 root caiwu 0 12月  6 13:55 /tmp/3.txt
+
+
+
+特殊权限：
+
+	suid
+	sgid
+	sticky bit
+
+
+1) suid 	4
+
+	一般系统自带的命令会带有该权限
+	作用：
+		普通用户执行命令期间，会临时获取到命令属主用户对操作系统的权限 
+
+	[root@node01 ~]# ls -l /usr/bin/passwd 
+	-rwsr-xr-x. 1 root root 27832 6月  10 2014 /usr/bin/passwd
+
+	[root@node01 ~]# chmod u+s 文件名称 
+	
+	
+2) sgid 	2
+
+	一般用于目录 
+	作用： 
+		在目录下新创建的文件会自动继承目录的属组
+		
+		[root@node01 ~]# chmod g+s /opt/linux/
+		[root@node01 ~]# ls -ldh /opt/linux/
+		drwxr-sr-x 2 martin caiwu 32 12月  6 15:36 /opt/linux/
+
+3) sticky bit  粘贴位 	1
+	
+	一般用于目录
+	作用： 
+		只有root、目录的属主用户、文件的属主可以删除文件 
+		
+	[root@node01 ~]# chmod o+t /opt/python/
+
+	[root@node01 ~]# ls -ldh /opt/python/
+	drwxr-xrwt 2 root root 6 12月  6 15:44 /opt/python/
+
+
+
+示例：
+
+	用户：boss
+	员工：yg1
+	员工：yg2 
+
+	1、项目组 
+
+		/opt/project01 
+		
+			要求)  
+			
+				1、写文件
+				2、boss，管理所有文件 
+				3、员工相互改文件，不能删 
+						
+		[root@node01 ~]# usermod -aG boss martin
+		[root@node01 ~]# usermod -aG boss mike
+
+		[root@node01 ~]# chown boss /opt/project01/
+
+		[root@node01 ~]# chmod o+t /opt/project01/
+
+
+		[root@node01 ~]# chgrp boss /opt/project01/
+		[root@node01 ~]# chmod g+w /opt/project01/
+		[root@node01 ~]# chmod g+s /opt/project01/
+		[root@node01 ~]# 
+		[root@node01 ~]# ls -ldh /opt/project01/
+		drwxrwsr-t 2 boss boss 6 12月  6 16:10 /opt/project01/
+
+		[root@node01 ~]# ls -ldh /opt/project01/
+		drwxrwsr-t 2 boss boss 6 12月  6 16:10 /opt/project01/
+
+
+
+
+
+facl 文件访问控制列表 
+
+	作用：
+		针对单个用户、单个用户组设置权限 
+
+1、设置权限 
+
+	a. 针对单个用户 
+	
+		# setfacl -m u:用户名:权限  文件名称 
+	
+	b. 针对单个用户组 
+	
+		# setfacl -m g:用户组名:权限  文件名称 
+
+		
+	[root@node01 ~]# setfacl -m u:user04:rwx /opt/data/1.txt 
+
+		
+2、查看权限 
+
+	# getfacl 文件名称
+	
+		[root@node01 ~]# getfacl /opt/data/1.txt 
+		getfacl: Removing leading '/' from absolute path names
+		# file: opt/data/1.txt
+		# owner: user01
+		# group: user03
+		user::rw-
+		user:user04:rwx
+		group::r-x
+		mask::rwx
+		other::r--
+
+		
+3、删除facl权限 
+
+	[root@node01 ~]# setfacl -x u:user04 /opt/data/1.txt 
+
+		
+		
+chmod/chown/chgrp/setfacl共同选项：
+
+	-R 	递归
+	
+	[root@node01 ~]# chown -R mysql.mysql /opt/mysql/
+
+		
+		
+		
+		
+umask	权限的反掩码
+
+	作用： 
+		设置文件、目录的默认权限
+		
+	[root@node01 ~]# umask 
+	0022
+
+		第一个0： 无特殊权限(suid,sgid,sticky bit)
+		022：权限的反掩码 
+		
+			文件： 
+				666 - 022 = 644 
+				
+			目录: 
+				777 - 022 = 755 
+		
+	[root@node01 ~]# (umask 0066; touch /tmp/1.txt)
+		//修改umask值，只对括号内的命令生效
+	
+	[root@node01 ~]# ls -l /tmp/1.txt 
+	-rw------- 1 root root 0 12月  6 17:33 /tmp/1.txt
+	[root@node01 ~]# 
+	[root@node01 ~]# umask 
+	0022
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+

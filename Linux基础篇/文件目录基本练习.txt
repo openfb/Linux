@@ -1,0 +1,41 @@
+1、查看系统发行版本
+
+2、查看内核版本
+
+3、分别统计/boot、/dev目录占用的磁盘空间大小
+
+4、在/etc/sysconfig/network-scripts目录下查找以ifcfg-开头的文件
+
+5、删除/tmp目录下所有文件，并在/tmp目录下创建一个以系统当前时间为名的目录 
+
+6、在root用户的宿主目录下创建目录project/webproject，并在该目录下创建1.yaml....20.yaml共20个文件
+
+7、在/opt目录下创建目录devops/ansible
+
+8、将webproject目录下的1.yaml, 3.yaml, 5.yaml,7.yaml文件复制到ansible目录，并将ansible目录下的7.yaml文件重命名为test.yaml
+
+9、将文件/etc/fstab中的内容复制到test.yaml中
+
+10、使用vim编辑器修改test.yaml文件
+
+   1) 将文件中的开头的空行删除 
+   2) 复制文件的后两行内容，并将其在文件最后粘贴10遍
+   3) 将文件中的最后一行的数字0换为数字1
+   4) 将文件中defaults替换为netdev
+   5) 找到文件中的第二个dev，将该词修改为device
+   6) 删除所有#开头的行的第一个逗号后面的内容
+
+11、在ansible目录下查找大于2K的文件，将其复制到/tmp目录 
+
+12、修改/root/project/webproject目录名称为dev_project
+
+13、通过/etc/passwd文件统计系统中的用户数
+
+14、分页输出ls -l /dev命令的结果
+
+15、显示文件/etc/hosts的倒数第二行
+
+16、通过find命令统计/var/log目录下的目录数
+
+
+

@@ -1,0 +1,281 @@
+文件目录管理
+
+1、查看文件、目录的占用磁盘的容量
+
+	[root@node01 ~]# du -sh /etc/fstab 
+	4.0K	/etc/fstab
+
+	[root@node01 ~]# du -sh /etc/
+	30M	/etc/
+
+	[root@node01 ~]# du -ah /etc/
+
+
+2、创建目录 
+
+	[root@node01 ~]# mkdir /opt/python
+
+	-p: 递归
+
+	[root@node01 ~]# mkdir -pv /opt/linux/shell 
+
+	
+3、创建文件
+
+	[root@node01 ~]# touch /opt/python/file01
+
+	1) 大括号展开
+	
+		[root@node01 ~]# touch /opt/python/file{1..100}
+		[root@node01 ~]# touch /opt/python/{1,3,5,7,9}.txt
+		[root@node01 ~]# mkdir /opt/python/2018_{1..12}
+
+	2) 命令引用    $(command)
+	
+		格式化输出时间：
+		
+			[root@node01 ~]# date
+			2018年 12月 04日 星期二 09:59:22 CST
+			[root@node01 ~]# 
+			[root@node01 ~]# date +%F
+			2018-12-04
+			[root@node01 ~]# date +%T
+			10:00:07
+			[root@node01 ~]# date +%Y
+			2018
+			[root@node01 ~]# date +%m
+			12
+			[root@node01 ~]# date +%D
+			12/04/18
+			[root@node01 ~]# date +%d
+			04
+			[root@node01 ~]# date +%H
+			10
+			[root@node01 ~]# date +%M
+			00
+			[root@node01 ~]# date +%S
+			40
+			[root@node01 ~]# date +%F_%T
+
+			[root@node01 ~]# mkdir /opt/python/$(date +%F_%T)
+
+
+4、删除文件、目录 
+
+	[root@node01 ~]# rm /opt/python/1.txt 
+	rm：是否删除普通空文件 "/opt/python/1.txt"？y
+
+	-r: 删除目录 
+
+	[root@node01 ~]# rm -r /opt/python/2018_1
+
+	-f：强制删除 
+	[root@node01 ~]# rm -rf /opt/python/2018_11/
+
+
+5、复制文件或目录 
+
+	# cp [源文件] [目的文件]
+
+	[root@node01 ~]# cp /opt/linux/1.sh /opt/python/
+
+	[root@node01 ~]# cp /opt/linux/2.sh /opt/python/22.sh
+
+
+	-r：用于复制目录 
+	
+	[root@node01 ~]# cp -r /opt/linux/shell/ /opt/python/
+
+
+6、移动文件/目录 
+
+	# mv [源文件] [目的文件]
+
+	[root@node01 ~]# mv /opt/linux/3.sh /opt/python/
+	
+	[root@node01 ~]# mv /opt/python/shell/ /tmp/
+
+	同目录下移动文件，即重命名
+	
+	[root@node01 ~]# mv /opt/linux/2.sh /opt/linux/new.sh
+
+
+7、显示目录结构
+	[root@node01 ~]# yum install -y tree //安装tree命令
+	[root@node01 ~]# tree /opt/
+
+
+8、查看文件内容 
+
+	cat/head/tail/more/less 
+	
+	[root@node01 ~]# cat /etc/fstab 
+	[root@node01 ~]# cat -n /etc/fstab 
+
+	查看系统的发行版本
+	
+	[root@node01 ~]# cat /etc/redhat-release 
+	CentOS Linux release 7.4.1708 (Core) 
+
+	查看内核版本
+
+	[root@node01 ~]# uname -r
+	3.10.0-693.el7.x86_64
+
+
+more/less 	分页显示文件内容 
+
+	[root@node01 ~]# more /var/log/messages 
+
+	[root@node01 ~]# less /var/log/messages 
+	
+		回车：按行显示 
+		空格：按屏幕分页显示 
+		q	退出 
+		
+head/tail 
+
+	[root@node01 ~]# head -n 3 /etc/passwd
+	//默认显示文件前10行
+	[root@node01 ~]# head /etc/passwd
+	
+	[root@node01 ~]# tail -n 2 /etc/passwd
+	[root@node01 ~]# tail /etc/passwd
+
+
+
+管道符：
+
+	[root@node01 ~]# head -n 3 /etc/passwd | tail -n 1
+
+	[root@node01 ~]# du -ah /etc/ | less
+
+	[root@node01 ~]# tree /etc/ | less
+	
+	[root@node01 ~]# ls -lSh /etc/ | head -n 4
+
+	[root@node01 ~]# ls -lt /etc/ | head -n 6
+
+
+统计文件行数
+
+	[root@node01 ~]# wc -l /etc/fstab 
+	11 /etc/fstab
+	[root@node01 ~]# 
+	[root@node01 ~]# wc /etc/fstab 
+	 11  54 465 /etc/fstab
+
+	[root@node01 ~]# head -n 4 /etc/fstab | tail -n 1 | wc
+
+	[root@node01 ~]# ls -l /etc/ | wc -l
+	181
+
+
+
+
+9、文件查找 
+
+# find <查找路径> <查找条件> [ -exec command ]
+
+查找条件：
+
+	1) 按照文件名称查找
+		
+		-name "条件"
+		
+			[root@node01 ~]# find /etc/ -name "*.conf"
+
+			[root@node01 ~]# find /etc/ -name "*sys*"
+
+	2) 按照文件类型查找 
+	
+		-type 
+			b：块设备文件(硬盘、分区)
+		
+			f: 文本文件 
+		[root@node01 ~]# find /tmp/ -type f
+
+			d: 目录 
+		[root@node01 ~]# find /tmp/ -type d
+		
+			l：软链接文件
+		[root@node01 ~]# find /etc/ -type l 
+
+		[root@node01 ~]# find /dev -type b
+
+
+	3) 按文件大小查找 
+	
+		-size 
+		
+		[root@node01 ~]# find /etc/ -size +5M 
+		[root@node01 ~]# find /etc/ -size +500k
+
+		[root@node01 ~]# find /etc/ -size -5M 
+
+		[root@node01 ~]# find /etc/ -size 2M
+
+
+	4) 按照文件的修改时间查找
+	
+		-mtime 
+
+			查找7天前修改的文件 
+			
+			[root@node01 ~]# find /etc/ -mtime +7
+
+			查找最近7天修改的文件 
+			
+			[root@node01 ~]# find /etc/ -mtime -7
+			
+		-ctime 按文件的创建时间查找
+		
+			[root@node01 ~]# find / -ctime +3 -a -name "*.log"
+
+
+
+	5) -exec  command  \;
+	
+		[root@node01 ~]# find /opt/shell/ -name "*.jpg" -exec rm -rf {} \; 
+
+		[root@node01 ~]# find /opt/shell/ -name "*.jpg" -exec cp {} /opt/testdir/ \;
+
+
+	6) 复合条件查找 
+	
+		-a  并且 	and
+		
+			[root@node01 ~]# find /etc/ -name "*.conf" -a -size +10k
+
+			[root@node01 ~]# find /etc/ -name "*.conf" -a -size +10k -exec cp {} /tmp \;
+
+		-o   或者     or 
+		
+			[root@node01 ~]# find /etc/ -name "*.conf" -o -size +20M
+
+
+
+10、获取命令的所在路径  
+
+	[root@node01 ~]# which find
+	/bin/find
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

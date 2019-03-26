@@ -1,0 +1,378 @@
+硬盘管理 
+
+	硬盘的表示方法：
+	
+		/dev/sda	
+		
+			[root@localhost ~]# ls -l /dev/sda
+			brw-rw---- 1 root disk 8, 0 12月  5 12:06 /dev/sda
+
+			a: 第一块 
+			sd: 接口类型
+				SCSI/SATA/SAS接口
+
+		硬盘类型：
+			机械硬盘
+			固态硬盘/SSD
+
+
+	硬盘分区的表示方法：
+	
+		类型：
+			主分区		
+			扩展分区	只有1个
+				逻辑分区 	
+					无数量限制
+					
+			主分区 + 扩展分区 <= 4
+
+		[root@localhost ~]# ls -l /dev/sda*
+		brw-rw---- 1 root disk 8, 1 12月  5 12:06 /dev/sda1
+		brw-rw---- 1 root disk 8, 2 12月  5 12:06 /dev/sda2
+
+	
+		/dev/sda1	sda硬盘第1个主分区
+			/dev/sda2	
+			/dev/sda3	
+			
+		1...4: 主分区、扩展分区
+	
+	
+		/dev/sda5	第1个逻辑分区
+	
+	
+	创建文件系统
+	
+		Window:
+			NTFS
+			FAT32	单个文件大小4G 
+			
+		
+		Linux文件系统：
+			ext3, ext4
+			xfs
+		
+				ext4:
+					单个文件大小最大为16TB
+					分区最大容量支持1EB
+			
+				xfs：
+					分区最大容量支持8EB
+							
+			fat32
+			ntfs	ntfs-3g  rpmfind.net 
+	
+	
+	
+	挂载文件系统
+	
+		块设备文件 ---- 空目录 
+		
+		# mount /dev/sda1  /ab 
+		
+		
+	
+相关命令
+
+1、查看硬盘/分区信息
+
+	数据块 block
+		存储数据的最小单位	4KB
+
+	[root@node01 ~]# fdisk -l
+
+	[root@node01 ~]# lsblk 
+
+
+2、管理磁盘分区
+
+	# fdisk <硬盘名称>
+		
+		n	创建分区 
+		d	删除分区 
+		p	显示分区 
+		w	保存退出
+		q	退出 
+	
+	
+3、创建文件系统 --- mkfs 
+
+	# mkfs -t <文件系统>  <设备名称>
+	
+	
+4、挂载 
+
+	a. 
+	
+	# mount <设备名称> <挂载点>
+
+	b. 查看设备的挂载信息
+	
+	# mount 
+
+
+
+示例：添加4G硬盘
+
+	主分区     200M		ext4		/bj
+	主分区     200M		ext4		/sh
+	逻辑分区     200M		xfs		/wh
+	逻辑分区     200M		xfs		/tj
+
+
+1、创建分区
+
+	[root@node01 ~]# fdisk /dev/vdb
+
+		Command (m for help): p
+
+		Disk /dev/vdb: 4294 MB, 4294967296 bytes, 8388608 sectors
+		Units = sectors of 1 * 512 = 512 bytes
+		Sector size (logical/physical): 512 bytes / 512 bytes
+		I/O size (minimum/optimal): 512 bytes / 512 bytes
+		Disk label type: dos
+		Disk identifier: 0x256e20d5
+
+		   Device Boot      Start         End      Blocks   Id  System
+		/dev/vdb1            2048      411647      204800   83  Linux
+		/dev/vdb2          411648      821247      204800   83  Linux
+		/dev/vdb3          821248     8388607     3783680    5  Extended
+		/dev/vdb5          823296     1232895      204800   83  Linux
+		/dev/vdb6         1234944     1644543      204800   83  Linux
+
+
+	[root@node01 ~]# partprobe /dev/vdb		//使内核识别硬盘分区 
+	
+
+
+2、创建文件系统 
+
+	[root@node01 ~]# mkfs -t ext4 /dev/vdb1 
+	[root@node01 ~]# mkfs -t ext4 /dev/vdb2
+
+	[root@node01 ~]# mkfs.xfs /dev/vdb5 
+	[root@node01 ~]# mkfs.xfs /dev/vdb6
+
+
+3、挂载
+
+	[root@node01 ~]# mkdir /bj /sh /tj/ /wh
+	[root@node01 ~]# mount /dev/vdb1 /bj/
+	[root@node01 ~]# mount /dev/vdb2 /sh/
+	[root@node01 ~]# mount /dev/vdb5 /tj/
+	[root@node01 ~]# mount /dev/vdb6 /wh/
+
+	查看磁盘的容量使用情况
+
+	[root@node01 ~]# df -hT
+
+	卸载
+	
+	[root@node01 ~]# umount /dev/vdb1 
+		或者
+	[root@node01 ~]# umount /bj 
+
+
+	
+4、实现设备的自动挂载  ---- /etc/fstab 
+
+文件格式：
+
+	设备名称/UUID 	挂载点目录  	文件系统	挂载参数(defaults)	0 0
+	
+		0：不自动备份
+		0：开机不检测
+
+	[root@node01 ~]# vim /etc/fstab 
+
+		/dev/vdb1	/bj	ext4	defaults	0 0
+		/dev/vdb2	/sh	ext4	defaults	0 0
+		/dev/vdb5	/tj	xfs	defaults	0 0
+		/dev/vdb6	/wh	xfs	defaults	0 0
+
+	[root@node01 ~]# mount -a		//使系统重新读取fstab配置变化，使挂载信息生效
+	[root@node01 ~]# df -hT
+	
+
+查看设备的UUID
+
+	[root@node01 ~]# blkid /dev/vdb6
+	/dev/vdb6: UUID="5599d7b3-c17e-4451-80ba-a4c4f4e207cb" TYPE="xfs" 
+	
+	
+	
+	
+	
+	
+	
+
+
+示例：扩展swap
+
+1、查看当前swap空间大小 
+
+	[root@node01 ~]# free -m
+				  total        used        free      shared  buff/cache   available
+	Mem:            992          90         556           6         345         738
+	Swap:          2047           0        2047
+
+
+2、准备2G分区，将其ID修改为82 (t指令)
+
+	[root@node01 ~]# fdisk -l /dev/vdb | grep -i "vdb7"
+	/dev/vdb7         1646592     5840895     2097152   82  Linux swap / Solaris
+	[root@node01 ~]# 
+
+	[root@node01 ~]# partprobe /dev/vdb
+
+
+3、将其格式化为swap文件系统 
+
+	[root@node01 ~]# mkswap /dev/vdb7 
+	Setting up swapspace version 1, size = 2097148 KiB
+	no label, UUID=4f3b52d1-6795-43a8-a316-1608c1f9b9e2
+
+
+4、启用新的swap分区 
+
+	[root@node01 ~]# vim /etc/fstab 
+
+		/dev/vdb7       swap    swap    defaults        0 0
+
+	[root@node01 ~]# swapon -a		//启用新的swap分区
+	[root@node01 ~]# free -m
+				  total        used        free      shared  buff/cache   available
+	Mem:            992          93         540           6         358         734
+	Swap:          4095           0        4095
+
+
+	
+	
+
+inode 
+	
+	查看分区的inode
+	
+	[root@node01 ~]# df -i /dev/vdb1 
+	Filesystem     Inodes IUsed IFree IUse% Mounted on
+	/dev/vdb1       51200 51200     0  100% /bj
+
+
+	查看文件的metadata
+	
+	[root@node01 ~]# stat /etc/fstab 
+	  File: ‘/etc/fstab’
+	  Size: 660       	Blocks: 8          IO Block: 4096   regular file
+	Device: fd00h/64768d	Inode: 17296848    Links: 1
+	Access: (0644/-rw-r--r--)  Uid: (    0/    root)   Gid: (    0/    root)
+	Access: 2018-12-10 17:25:34.518348761 +0800
+	Modify: 2018-12-10 17:25:31.983414898 +0800
+	Change: 2018-12-10 17:25:32.010414195 +0800
+	 Birth: -
+
+	
+	
+	
+	
+分区表格式：
+
+	MBR   ----   管理工具  fdisk 
+		主分区、扩展分区、逻辑分区
+		主分区 + 扩展分区 <= 4
+		不支持2TB以上的磁盘
+		
+	GPT   ------ 管理工具  parted 
+		支持2TB以上的磁盘
+		主分区，数量不受限制
+		
+
+parted分区管理 
+
+[root@node01 ~]# parted /dev/vdc			//进入parted工具
+GNU Parted 3.1
+Using /dev/vdc
+Welcome to GNU Parted! Type 'help' to view a list of commands.
+(parted)                                                                  
+(parted) mklabel 			//指定分区表类型
+New disk label type? GPT	//GPT 
+(parted)                                                                  
+(parted) mkpart				//创建分区
+Partition name?  []? p1     //指定分区名称，可自定义          	                                    
+File system type?  [ext2]? ext4            //指定文件系统类型         	                      
+Start? 0                                   //分区起始大小                  		             
+End? 2G                                    //分区的终止                                
+Warning: The resulting partition is not properly aligned for best performance.
+Ignore/Cancel? I                                                          
+(parted)                                                                  
+(parted) print 			//显示分区信息                                                           
+Model: Virtio Block Device (virtblk)
+Disk /dev/vdc: 4295MB
+Sector size (logical/physical): 512B/512B
+Partition Table: gpt
+Disk Flags: 
+
+Number  Start   End     Size    File system  Name  Flags
+ 1      17.4kB  2000MB  2000MB               p1
+                                                          
+(parted) mkpart                                                           
+Partition name?  []? p2                                                   
+File system type?  [ext2]? ext4                                           
+Start? 2G                                                                 
+End? 100%                                                                 
+(parted) print
+Model: Virtio Block Device (virtblk)
+Disk /dev/vdc: 4295MB
+Sector size (logical/physical): 512B/512B
+Partition Table: gpt
+Disk Flags: 
+
+Number  Start   End     Size    File system  Name  Flags
+ 1      17.4kB  2000MB  2000MB               p1
+ 2      2001MB  4294MB  2293MB               p2
+
+(parted) quit                                                             
+Information: You may need to update /etc/fstab.
+
+	
+	
+	
+	
+
+链接文件
+
+	# ln -s 源文件 链接文件名称 
+	
+		-s： 软链接  
+		
+		
+	硬链接
+		1) 只能对文件创建
+		2) 源文件丢失，不影响硬链接文件正常使用
+		3) 不支持跨分区
+		
+	软链接 
+		1) 为文件、目录创建软链接 
+		2) 源文件修改(重命名、删除)，会导致软链接失效 
+		3) 支持跨分区创建
+		
+		
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+

@@ -1,0 +1,495 @@
+软件管理 
+
+软件安装包类型：
+
+	源码软件
+		*.tar.gz
+		*.tar.bz2
+		
+	rpm软件 
+		*.rpm 
+	
+	区别：
+		rpm:
+			1) 安装简单、时间短
+			
+		
+		
+		源码：
+			1) 安装复杂、时间较长
+			2) 灵活性高
+			
+			
+
+rpm软件管理 
+
+rpm软件安装包的组成部分：
+
+	zabbix-proxy-mysql-3.4.11-1.el7.x86_64.rpm
+	
+		3.4.11：版本
+		zabbix-proxy-mysql：软件名称
+		el7.x86_64：软件对应的系统平台 
+		
+
+rpm软件：
+
+	1、系统安装盘 .iso 
+	2、官网 
+	
+		http://rpmfind.net/
+		https://pkgs.org/
+
+
+1、查看光盘中的软件安装包
+
+	[root@node01 ~]# mount /dev/sr0 /mnt/
+	[root@node01 ~]# ls /mnt/Packages/
+
+
+rpm软件的包管理器 
+
+	rpm/yum 
+	
+1、rpm工具 
+
+	1) 安装软件 
+
+		# rpm -ivh 软件安装包
+		
+			i: install  安装 
+			v: verbose	详细信息
+			h: 以#显示软件安装进度
+			
+		示例01：安装dhcp软件 
+		
+			[root@node01 ~]# rpm -ivh /mnt/Packages/dhcp-4.2.5-58.el7.centos.x86_64.rpm 
+
+		示例02：安装httpd软件 
+		
+			--nodeps：忽略依赖关系 
+		
+			[root@node01 ~]# rpm -ivh --nodeps /mnt/Packages/httpd-2.4.6-67.el7.centos.x86_64.rpm 
+
+	2) 查看 
+	
+		a. 确认软件httpd是否安装
+
+			[root@node01 ~]# rpm -q httpd
+			httpd-2.4.6-67.el7.centos.x86_64
+		
+			[root@node01 ~]# rpm -q nginx
+			package nginx is not installed
+
+			[root@node01 ~]# rpm -qa | grep vim
+			vim-common-7.4.160-2.el7.x86_64
+			vim-enhanced-7.4.160-2.el7.x86_64
+			vim-filesystem-7.4.160-2.el7.x86_64
+			vim-minimal-7.4.160-2.el7.x86_64
+
+			
+		b. 查询软件生成的文件
+		
+			[root@node01 ~]# rpm -ql dhcp
+
+		c. 查询软件的配置文件 
+		
+			[root@node01 ~]# rpm -qc dhcp
+	
+			[root@node01 ~]# rpm -qc httpd
+
+		d. 查询文件由哪个软件生成 
+		
+			[root@node01 ~]# which vim
+			/usr/bin/vim
+			
+			[root@node01 ~]# rpm -qf /usr/bin/vim
+			vim-enhanced-7.4.160-2.el7.x86_64
+	
+	
+	3) 卸载软件 
+	
+		[root@node01 ~]# rpm -e --nodeps httpd
+
+		
+	4) 更新软件 		lftp 10.100.100.252
+	
+		# rpm -Uvh <软件安装包>
+			
+			升级时会自动卸载旧版本软件
+		
+			[root@node01 ~]# rpm -ivh --nodeps zabbix-web-3.2.7-1.el7.noarch.rpm 
+
+			[root@node01 ~]# rpm -Uvh --nodeps zabbix-web-3.4.11-1.el7.noarch.rpm 
+
+	
+
+
+2、yum工具
+
+	优势：自动解决依赖关系 
+	
+	配置yum源配置文件
+	
+		/etc/yum.repos.d/*.repo 
+
+	类型：
+	
+		本地yum源 
+		ftp yum源
+		http源
+		
+			https://mirrors.aliyun.com/
+	
+			http://mirrors.163.com/
+	
+			https://mirrors.tuna.tsinghua.edu.cn/
+	
+	
+	
+示例：配置本地yum源 	
+	
+1、编辑配置文件
+
+	[root@node01 yum.repos.d]# mkdir /etc/yum.repos.d/bak
+	[root@node01 yum.repos.d]# mv /etc/yum.repos.d/*.repo /etc/yum.repos.d/bak
+
+
+	[root@node01 ~]# cat /etc/yum.repos.d/centos74.repo
+
+		[centos74]
+		name=centos74
+		baseurl=file:///opt/software
+		enabled=1
+		gpgcheck=0
+
+
+2、将光盘挂载到/opt/software
+
+	[root@node01 ~]# umount /mnt
+
+	[root@node01 ~]# mkdir /opt/software
+	[root@node01 ~]# mount /dev/sr0 /opt/software/
+
+	
+3、验证yum源配置正确 
+
+	[root@node01 ~]# yum clean all
+
+	[root@node01 ~]# yum repolist
+	Loaded plugins: fastestmirror
+	centos74                                                                                          | 3.6 kB  00:00:00     
+	(1/2): centos74/group_gz                                                                          | 156 kB  00:00:00     
+	(2/2): centos74/primary_db                                                                        | 5.7 MB  00:00:00     
+	Determining fastest mirrors
+	repo id                                                  repo name                                                 status
+	centos74                                                 centos74                                                  9,591
+	repolist: 9,591
+
+	
+安装httpd软件 
+
+[root@node01 ~]# yum install httpd
+
+[root@node01 ~]# yum install bind -y
+	
+	
+	
+示例：配置ftp源
+
+	[root@node01 yum.repos.d]# cat centos74.repo
+
+		[centos74]
+		name=centos74
+		baseurl=ftp://10.100.100.252/software/centos7.4
+		enabled=1
+		gpgcheck=0
+
+	[root@node01 yum.repos.d]# yum install -y bind-chroot 
+
+	配置zabbix源 
+	
+	[root@node01 ~]# cat /etc/yum.repos.d/zabbix.repo 
+	
+		[zabbix3.4]
+		name=zabbix3.4
+		baseurl=ftp://10.100.100.252/software/zabbix3.4
+		enabled=1
+		gpgcheck=0
+
+	[root@node01 yum.repos.d]# yum install -y zabbix-server-mysql 
+	
+	
+	
+示例：配置openstack源  http
+
+[root@node01 ~]# cat /etc/yum.repos.d/opstack.repo 
+
+	[openstack_r]
+	name=openstack_r
+	baseurl=https://mirrors.aliyun.com/centos/7.6.1810/cloud/x86_64/openstack-rocky/
+	enabled=1
+	gpgcheck=0
+
+[root@node01 ~]# yum install -y openstack-keystone 	
+	
+	
+	
+开启yum缓存功能 
+
+	配置glusterfs源
+
+	[root@node01 ~]# cat /etc/yum.repos.d/gluster.repo 
+
+		[gluster]
+		name=ceph
+		baseurl=https://mirrors.aliyun.com/centos/7.6.1810/storage/x86_64/gluster-3.12/
+		enabled=1
+		gpgcheck=0
+		
+		
+	启用yum缓存 
+
+	[root@node01 ~]# vim /etc/yum.conf 
+
+		keepcache=1
+	
+	[root@node01 ~]# yum install -y glusterfs-server 
+	
+	[root@node01 ~]# find /var/cache/yum -name "*.rpm" -exec cp {} /opt/gluster/ \;
+
+	
+	
+
+	
+制作yum仓库 
+
+	repodata/repomd.xml 文件 
+
+	[root@node01 ~]# createrepo /opt/ansible/
+
+
+
+
+yum常用的用法：
+
+1、安装软件 
+
+# yum install -y <软件名称> 
+
+# yum list all 	//列出所有软件名称 
+
+	[root@node01 ~]# yum list all | grep http
+
+
+2、以组的安装软件 
+
+# yum grouplist    //查看可用的组 
+
+# yum groupinstall -y <软件组名>
+
+	如果组名称中带有空格，组名需要使用引号 "GNOME Desktop"
+	
+	
+3、查找软件	
+
+# yum search <软件名称>
+
+[root@node01 ~]# yum search httpd
+
+
+4、卸载软件 
+
+# yum remove <软件名称> 
+
+[root@node01 ~]# yum remove ansible -y 
+
+
+5、更新软件 
+
+# yum update <软件名称>
+
+
+6、搜索文件与软件的对应关系  
+
+# yum provides "文件名称" 
+
+[root@node01 ~]# yum provides "*bin/iostat" 
+
+
+7、生成yum缓存 
+
+[root@node01 ~]# yum makecache 
+
+
+支持命令补全
+
+[root@node01 ~]# rpm -q bash-completion
+bash-completion-2.1-6.el7.noarch
+
+
+
+
+
+====================================================
+
+源码软件安装 
+
+	灵活性高
+	
+		编译 ---> 计算机可执行二进制程序 
+		
+	步骤：
+	
+		1、根据需求, 配置软件的安装参数
+		2、编译，计算机可执行二进制程序
+		3、安装；生成相关的文件 
+		
+
+示例：编译安装htop 
+
+		1、解压缩软件 
+
+		[root@node01 ~]# tar xf htop-2.2.0.tar.gz 
+
+
+		2、配置软件安装路径 
+
+		[root@node01 ~]# mkdir /app
+
+		[root@node01 ~]# cd htop-2.2.0/
+		[root@node01 htop-2.2.0]# ./configure --prefix=/app/htop 
+			
+
+				错误1：
+
+					checking for gcc... no
+					checking for cc... no
+					checking for cl.exe... no
+
+
+				解决办法：
+
+					[root@node01 htop-2.2.0]# yum install -y gcc 
+
+
+				错误2：
+
+					configure: error: You may want to use --disable-unicode or install libncursesw.
+
+
+				解决办法： 
+
+					[root@node01 htop-2.2.0]# yum install -y ncurses-devel 
+
+
+		3、编译 
+
+		[root@node01 htop-2.2.0]# make
+
+
+		4、安装
+
+		[root@node01 htop-2.2.0]# make install 
+
+
+
+		打开软件：
+
+		[root@node01 ~]# /app/htop/bin/htop 
+
+			q：退出 
+	
+
+
+示例：编译安装nginx 
+
+		[root@node01 ~]# tar xf nginx-1.15.3.tar.gz 
+
+		[root@node01 ~]# cd nginx-1.15.3/
+		[root@node01 nginx-1.15.3]# ./configure --prefix=/app/nginx --with-http_ssl_module
+
+				错误1： ./configure: error: the HTTP rewrite module requires the PCRE library.
+
+
+					解决办法：[root@node01 nginx-1.15.3]# yum install -y pcre-devel 
+
+
+				错误2： ./configure: error: the HTTP gzip module requires the zlib library.
+
+						# yum list all | grep -i zlib 
+
+					解决办法 ： [root@node01 nginx-1.15.3]# yum install -y zlib-devel
+
+					
+				错误3： ./configure: error: SSL modules require the OpenSSL library.
+
+					解决办法 ：[root@node01 nginx-1.15.3]# yum install -y openssl-devel 
+
+			
+		[root@node01 nginx-1.15.3]# make
+		[root@node01 nginx-1.15.3]# make install 
+
+查看软件安装目录
+
+	[root@node01 ~]# ls /app/nginx/
+	conf  html  logs  sbin
+
+	
+	
+
+PATH环境变量的使用 
+
+
+	保存命令路径 
+	
+	1、查看PATH变量的值 
+	
+	[root@node01 ~]# echo $PATH
+	/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin
+
+	
+方法1) 设置软链接 
+
+	[root@node01 ~]# ln -s /app/htop/bin/htop /usr/local/bin/
+	[root@node01 ~]# ls -l /usr/local/bin/htop 
+	lrwxrwxrwx 1 root root 18 12月 10 12:17 /usr/local/bin/htop -> /app/htop/bin/htop
+	[root@node01 ~]# 
+	[root@node01 ~]# htop 
+	
+	
+方法2) 修改PATH的值  
+
+	a. /etc/profile 
+	
+	[root@node01 ~]# vim /etc/profile 
+	
+		export PATH=$PATH:/app/htop/bin
+
+	[root@node01 ~]# source /etc/profile
+	[root@node01 ~]# echo $PATH
+	/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin:/app/htop/bin
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+
+

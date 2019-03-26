@@ -1,0 +1,78 @@
+练习：
+
+1) 查看kvm虚拟机的系统平台及发行版本
+2) 将虚拟机主机名修改为test01.linux.com
+3) 永久关闭系统的SELinux(编辑/etc/sysconfig/selinux，并enforcing修改为disabled)
+
+1、分别统计/etc, /tmp, /usr目录的大小
+
+2、查看文件/etc/fstab文件的权限信息
+
+3、查看目录/dev权限的信息
+
+4、分别显示文件/usr/share/dict/words的前8行及第8行内容
+
+5、统计系统日志文件/var/log/messages的行数
+
+6、创建目录/uplooking/linux/openstack
+
+7、在/uplooking/linux/openstack目录中创建以YYYY-MM-DD-HH:MM:SS.sql命名的文件
+
+8、在/uplooking目录下分别创建1.jpg---20.jpg文件，1.mp3---10.mp3文件 
+
+9、将/uplooking目录下的文件1.jpg改名为1.txt 
+
+10、将/uplooking目录下所有以.mp3结尾的文件，复制到目录/java下
+
+11、将/java目录下的所有文件属主修改为alice，属组修改为jishu 
+
+12、将/java目录下的1.mp3文件到5.mp3文件的权限修改为600
+
+13、统计/dev目录下所有软链接文件的个数
+
+14、删除/tmp目录下所有文件
+
+15、将/uplooking/linux/openstack目录复制到/tmp目录下 
+
+16、显示eth0网卡带有ipv4地址, ipv6地址及MAC地址的三行内容 
+
+17、创建用户natasha，并指定其基本组为caiwu，附加组为shichang 
+
+18、创建用户openstack，并禁止其登录系统 
+
+19、为用户natasha添加附加组jishu
+
+20、为命令cat /etc/passwd设置别名为catp，并要求所有用户均可使用该别名
+
+21、在/uplooking目录下搜索所有以.txt结尾的文件，并将其复制到/tmp/openstack目录 
+
+22、将/uplooking目录下所有文件打包保存到/backup目录，名称为uplooking01.tar.gz
+
+23、将/uplooking目录下所有文件打包保存到/backup目录，名称为uplooking02.tar.bz2
+
+24、将/backup/uplooking02.tar.bz2解压缩到/company目录
+
+25、分别在系统中安装dhcp, samba, httpd, ntp软件 
+
+26、分别查询以上软件的配置文件
+
+27、卸载系统中带有jdk三个字母的所有软件
+
+28、分别查询命令passwd, netstat, ifconfig, vim所对应的软件名称
+
+29、在/tmp目录下创建文件1.txt，并完成如下操作：
+
+	1) 在文件中添加"Linux is open source OS."内容
+	2) 将以上内容复制1000遍
+	3) 将第874行的OS修改为system
+	4) 在文件末尾添加"export PATH"内容
+	5) 将文件前5行中的Linux换为AIX
+	6) 将第3行内容移动到第7行后
+	7) 将文件/etc/redhat-release内容追加到文件第235行后
+
+30、设置文件/tmp/1.txt的属主为用户natasha，将只允许该用户及root用户可修改文件内容
+
+	
+
+
+

@@ -1,0 +1,274 @@
+用户管理
+
+	多用户多任务操作系统 
+	
+用户类型：
+
+	管理员用户   root 	uid: 0
+	普通用户	 1000 
+	系统用户	 1--999
+		-  保证某应用可正常使用
+		-  不允许登录系统 
+	
+用户 
+	基本组   gid
+		- 只能有一个
+	
+	
+	附加组   GID
+		- 可以有多个 
+	
+	
+用户组 
+
+
+	
+用户密码的文件 --- /etc/shadow
+存放用户的文件 ---  /etc/passwd 
+
+文件格式：
+	
+	用户名:密码占位符:uid:gid:说明信息:宿主目录:shell
+	
+	shell名称：
+		/bin/bash	正常登录系统、执行命令
+		/sbin/nologin	系统用户，不允许登录系统 
+		
+		
+1、创建用户 
+
+	# useradd [选项] 用户名 
+
+		[root@node01 ~]# useradd hadoop
+		
+	选项：
+	
+		-u <uid> 	指定用户uid
+		
+			[root@node01 ~]# useradd -u 2000 martin
+
+		-s <shell>	指定用户的shell
+		
+			[root@node01 ~]# useradd -u 27 -s /sbin/nologin mysql
+
+		-M	不建立用户家目录 
+		
+			[root@node01 ~]# useradd -s /sbin/nologin -M nginx
+
+		-g <组id>	指定用户的基本组 
+		
+			[root@node01 ~]# groupadd caiwu
+			[root@node01 ~]# grep "caiwu" /etc/group
+			caiwu:x:2003:
+
+			[root@node01 ~]# useradd -g 2003 mike
+			[root@node01 ~]# id mike
+			uid=2002(mike) gid=2003(caiwu) 组=2003(caiwu)
+
+		
+		-G <组id>	指定用户的附加组 
+		
+			[root@node01 ~]# groupadd jishu
+			[root@node01 ~]# 
+			[root@node01 ~]# grep 'jishu' /etc/group
+			jishu:x:2004:
+			[root@node01 ~]# 
+			[root@node01 ~]# useradd -g 2003 -G 2004 tome
+			[root@node01 ~]# id tome
+			uid=2003(tome) gid=2003(caiwu) 组=2003(caiwu),2004(jishu)
+
+			[root@node01 ~]# useradd -g caiwu -G jishu user05
+			[root@node01 ~]# id user05
+			uid=2004(user05) gid=2003(caiwu) 组=2003(caiwu),2004(jishu)
+
+		-e 	指定用户的过期时间 
+		
+			[root@node01 ~]# useradd -e 20181208 robin
+
+		
+		
+2、切换用户 
+
+	[root@node01 ~]# su - hadoop
+
+
+3、设置用户的密码 
+
+	# passwd [选项] [用户名]
+
+		root用户可以随意修改任意用户的密码
+		普通用户只能修改自己的密码
+
+	选项： 
+	
+		-l 	锁定用户密码 
+		
+			[root@node01 ~]# passwd -l tome
+			锁定用户 tome 的密码 。
+			passwd: 操作成功
+
+		-u  解锁用户密码 
+		
+			[root@node01 ~]# passwd -u tome
+			解锁用户 tome 的密码。
+			passwd: 操作成功
+
+		-e  设置用户密码过期 
+		
+			[root@node01 ~]# passwd -e zs
+
+
+4、删除用户 
+
+	# userdel -r <用户名>
+	
+		-r：同时删除用户的家目录及邮箱文件
+	
+		[root@node01 ~]# userdel -r martin
+
+
+5、修改用户的属性 
+
+	# usermod [选项] <用户名>
+	
+		-u <uid>
+		-g <gid>
+		-G <gid>
+		-s <shell>
+		-L	锁定用户密码 
+		-U	解锁用户密码 
+		
+		
+		[root@node01 ~]# usermod -s /sbin/nologin robin
+		[root@node01 ~]# grep "robin" /etc/passwd
+		robin:x:2005:2005::/home/robin:/sbin/nologin
+
+		-aG：添加多个组
+			
+			[root@node01 ~]# usermod -aG caiwu king
+			[root@node01 ~]# id king
+			uid=2007(king) gid=2007(king) groups=2007(king),2003(caiwu),2004(jishu)
+
+			[root@node01 ~]# groupadd shichang
+			[root@node01 ~]# groupadd yewu
+			[root@node01 ~]# usermod -aG yewu,shichang king
+			[root@node01 ~]# id king
+			uid=2007(king) gid=2007(king) groups=2007(king),2003(caiwu),2004(jishu),2008(shichang),2009(yewu)
+
+
+
+6、查看用户信息
+
+	# id <用户名> 
+
+		[root@node01 ~]# id king
+		uid=2007(king) gid=2007(king) groups=2007(king),0(root),2003(caiwu),2004(jishu),2008(shichang),2009(yewu)
+		[root@node01 ~]# 
+		[root@node01 ~]# id -u king
+		2007
+		[root@node01 ~]# id -g king
+		2007
+		[root@node01 ~]# id -G king
+		2007 0 2003 2004 2008 2009
+		[root@node01 ~]# 
+
+		[root@node01 ~]# id -u -n king
+		king
+		[root@node01 ~]# id -g -n king
+		king
+		[root@node01 ~]# id -G -n king
+		king root caiwu jishu shichang yewu
+
+
+
+
+用户组：
+
+1、创建用户组 
+
+	# groupadd <用户组>
+
+	[root@node01 ~]# groupadd web
+	[root@node01 ~]# groupadd -g 3000 db
+
+
+2、删除用户组 
+
+	# groupdel <用户组>
+
+	[root@node01 ~]# groupdel db
+
+
+3、从组中删除用户
+
+	[root@node01 ~]# gpasswd -d user02 web
+
+
+
+
+用户宿主目录下的文件：
+
+	1) 创建用户时，系统会自动将/etc/skel目录下的关于用户的配置文件复制到对应用户的家目录 
+	2) 用户的配置文件
+	
+		a. 定义命令别名
+		
+			/home/user01/.bashrc	仅针对user01生效[root]
+			
+			/etc/bashrc				针对所有用户生效
+
+		b. 设置用户登录系统时触发的动作
+		   定义环境变量
+		
+			/home/user01/.bash_profile		针对单个用户
+
+			/etc/profile 					针对所有用户生效
+			
+			
+		c. 设置用户退出系统时触发的动作 
+
+			/home/user01/.bash_logout
+			
+			
+			
+			
+重置root用户密码 
+
+	1、重启系统，在系统菜单选择第一项，按e进入编辑启动配置文件
+
+	2、找到linux16开头的行，在行末尾添加rd.break, 按ctrl + x继续启动，进入救援模式
+
+	3、切换到伪根目录 chroot /sysroot
+
+	4、使用passwd root重置密码 
+	
+	    [root@localhost ~]# echo "redhat" | passwd --stdin user01
+
+
+	5、创建selinux需要的隐藏文件   touch /.autorelabel
+
+	6、两次exit
+
+		
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+
+
+
+
+
+
+
+
+

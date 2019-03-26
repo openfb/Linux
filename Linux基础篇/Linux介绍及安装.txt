@@ -1,0 +1,241 @@
+Linux操作系统
+
+	Linux 
+	
+		https://www.netcraft.com/
+	
+		适用于安装在服务器，提供服务
+		
+	优势：
+		开源  开放源代码 
+		更大化发挥硬件资源
+
+
+	Linux组成及发行版本：
+		
+		组成：
+			内核 kernel		https://www.kernel.org/
+				完成系统正常运行、硬件驱动
+				
+				版本：x.y.z
+					2.6.32
+						次版本：
+							奇数：测试、开发
+							偶数：稳定
+						
+			应用程序 
+
+
+	Linux发行版本：
+		
+		RedHat 红帽
+			CentOS, Fedora, RHEL
+		
+		Ubuntun, Solaris, SUSE, Debian, Gentoo
+		
+		
+安装centos
+
+	创建的分区
+	
+		/boot	启动分区    200M
+		swap	交换分区	2G或者4G
+		/		根分区
+		
+	打开网卡连接
+		
+	
+	设置root用户密码 
+	
+	
+		
+---------- Linux 一切皆文件！！！！！！ ----------
+
+Linux目录结构
+
+	/
+		/root	root用户的家目录/宿主目录 
+		/home	普通用户的家目录/宿主目录 
+		
+			martin ---- /home/martin 
+			jerry ---   /home/jerry 
+			
+		/etc	配置文件 
+
+		/lib64	库文件	.so 
+			
+		/boot	启动分区，内核和系统相关的配置文件 
+
+		/dev	存放设备文件(磁盘、分区、光驱、键盘、鼠标)的目录
+		
+		/bin, /sbin, /usr/bin, /usr/sbin 
+			可执行程序，命令
+		
+		
+		
+		
+命令提示符
+
+	[root@localhost ~]#		
+	
+		root	当前登录系统的用户名 
+		
+		#	管理员身份
+		$	普通用户身份
+		
+			切换用户：
+				[root@localhost ~]# su - martin
+
+		localhost	主机名
+		
+		当前目录名称
+			~	当前用户的家目录 
+			
+			
+		
+		
+文件目录管理 
+
+1、切换目录/查看当前目录 
+
+	# cd [目录名称]
+
+	a. 切换到/home目录  [绝对路径]
+	
+		[root@localhost ~]# cd /home/
+		[root@localhost home]# pwd
+		/home
+
+		[root@localhost home]# cd /etc/sysconfig/
+		[root@localhost sysconfig]# pwd
+		/etc/sysconfig
+
+	b. 返回用户家目录 
+	
+		[root@localhost ~]# cd
+
+		[root@localhost ~]# cd /
+
+	c. 切换到当前目录下的etc目录   [相对路径]
+	
+		[root@localhost ~]# cd /
+		[root@localhost /]# pwd
+		/
+		[root@localhost /]# cd etc/
+		[root@localhost etc]# pwd
+		/etc
+
+		[root@localhost etc]# pwd
+		/etc
+		[root@localhost etc]# cd sysconfig/
+		[root@localhost sysconfig]# pwd
+		/etc/sysconfig
+
+	d. 返回上一级目录 
+	
+		[root@localhost ~]# cd /etc/sysconfig/
+		[root@localhost sysconfig]# pwd
+		/etc/sysconfig
+		[root@localhost sysconfig]# cd ..
+		[root@localhost etc]# pwd
+		/etc
+		[root@localhost etc]# cd ..
+		[root@localhost /]# pwd
+		/
+
+		
+2、查看文件 
+
+	# ls [选项] [文件名称/目录名称]
+	
+		a. 查看当前目录下的文件
+		
+			[root@node01 ~]# ls
+			anaconda-ks.cfg
+
+		b. 查看指定目录下的文件
+
+			[root@node01 dev]# ls /dev/
+
+			[root@node01 dev]# ls /etc/sysconfig/network-scripts/
+
+	选项：
+	
+	1) -a 
+	
+		查看所有文件(隐藏文件，即以点开头的文件)
+		
+		[root@node01 ~]# ls -a
+		.  ..  anaconda-ks.cfg  .bash_history  .bash_logout  .bash_profile  .bashrc  .cshrc  .tcshrc  .viminfo
+
+	2) -l  
+	
+		以详细信息的方式显示文件列表
+		
+		[root@node01 ~]# ls -l 
+			总用量 8
+			-rw-r--r--  1 root root    7 12月  3 16:51 1.txt
+			
+				12月  3 16:51	文件最后一次被修改的时间
+				7	文件大小，默认单位为字节Bytes
+				类型：
+					-	文本
+					d	目录   
+					l 	软链接文件
+		
+		[root@node01 ~]# ls -lh
+		
+		查看/etc/fstab、/etc/shadow文件的大小及权限信息
+		
+		[root@node01 ~]# ls -lh /etc/fstab 
+		-rw-r--r--. 1 root root 465 9月  20 16:44 /etc/fstab
+
+		[root@node01 ~]# ls -lh /etc/shadow
+
+
+
+	3) -d   用于显示目录本身的详细信息
+	
+		[root@localhost ~]# ls -ldh /etc/
+		drwxr-xr-x. 147 root root 12K 11月 27 16:37 /etc/
+
+
+	4) -t   按文件修改时间排序
+	
+		[root@node01 ~]# ls -lt
+		总用量 12
+		-rw-r--r--  1 root root    3 12月  3 17:07 3.txt
+		-rw-r--r--  1 root root    7 12月  3 16:51 1.txt
+
+	5) -S  按文件大小排序
+	
+		[root@node01 ~]# ls -lSh
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		
+		
+		
+
+
+
+
+
+
+
+
+
+
+

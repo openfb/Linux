@@ -1,0 +1,84 @@
+Linux运行模式 
+
+	0	关机模式 
+	1	单用户模式(重置root用户密码)
+	2	无网络的字符模式
+	3	完全字符模式
+	4	预留
+	5	图形模式
+	6	重启模式
+	
+
+	模式间切换：
+
+		# init 5
+		
+	查看当前运行的模式：
+
+		# runlevel 
+
+	设置系统默认的启动模式
+
+		/etc/inittab
+		
+			id:3:initdefault:
+
+
+	单用户模式
+
+		1、重启系统，在系统启动倒计时，按上下键停止启动
+		2、按字母e进行编辑启动配置文件，找到 kerel开头的行，再按e， 添加数字1
+		3、按字母b重启，进入单用户模式
+		4、passwd 
+			
+			
+			
+CentOS 7
+
+	模式切换：
+
+		[root@localhost ~]# systemctl isolate multi-user.target 
+
+		[root@localhost ~]# systemctl isolate graphical.target 
+
+	设置系统默认的启动模式
+
+		[root@localhost ~]# systemctl set-default multi-user.target 
+		
+		[root@localhost ~]# systemctl set-default graphical.target 
+
+
+	单用户模式(重置root用户密码)
+
+	
+
+救援模式 
+
+	启动盘引导
+
+	# chroot /mnt/sysimage	>> 切换救援模式的根目录 
+	
+	exit  exit  
+	
+	
+	1) dd 
+	2) /etc/fstab
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
