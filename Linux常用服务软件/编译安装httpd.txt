@@ -1,0 +1,156 @@
+软件安装：
+
+	rpm 
+	源码编译   *.tar.gz  
+	
+源码编译优势：
+
+	1) 灵活性高 
+	2) 指定软件的安装目录，方便后续迁移 
+
+	
+源码编译的安装步骤：
+
+	1) 配置软件的安装参数 
+	2) 编译 
+	3) 安装 
+
+
+
+
+
+编译安装httpd
+
+1) 卸载系统自带的httpd 
+
+[root@node01 ~]# rpm -qa | grep httpd
+
+
+2) 安装apr及apr-util
+
+[root@node01 ~]# tar zxf apr-1.5.2.tar.gz 
+[root@node01 ~]# cd apr-1.5.2/
+[root@node01 apr-1.5.2]# ./configure --prefix=/usr/local/apr
+[root@node01 apr-1.5.2]# make && make install
+
+错误1： checking for gcc... no
+		checking for cc... no
+		
+解决办法： [root@web_server_02 apr-1.5.2]# yum install -y gcc	
+
+
+
+
+
+[root@node01 ~]# tar zxf apr-util-1.5.4.tar.gz 
+[root@node01 ~]# cd apr-util-1.5.4/
+[root@node01 apr-util-1.5.4]# ./configure \
+--prefix=/usr/local/apr-util \
+--with-apr=/usr/local/apr/
+[root@node01 apr-util-1.5.4]# make && make install
+
+
+3) 安装httpd-2.4.12
+
+[root@node01 ~]# tar zxf httpd-2.4.12.tar.gz 
+[root@node01 ~]# cd httpd-2.4.12/
+[root@node01 httpd-2.4.12]# ./configure \
+--prefix=/usr/local/apache \
+--enable-so \
+--enable-rewrite \
+--enable-ssl \
+--enable-cgi \
+--enable-cgid \
+--enable-modules=most \
+--enable-mods-shared=most \
+--enable-mpm-shared=all \
+--with-mpm=event \
+--with-apr=/usr/local/apr \
+--with-apr-util=/usr/local/apr-util/
+
+
+
+MPM：httpd处理并发连接的模型 
+
+	1) prefork		httpd/2.2默认使用
+	
+		预先生成多个子进程等待响应客户端 
+
+	
+	2) worker
+	
+		由多个线程处理客户端连接
+	
+	3) event 
+	
+		根据事件驱动模型来处理并发连接
+		httpd/2.4 
+
+
+
+
+
+错误1：
+
+onfigure: error: pcre-config for libpcre not found. PCRE is required and available from http://pcre.org/
+
+解决办法1：
+
+[root@node01 httpd-2.4.12]# yum install -y pcre-devel
+
+
+错误2：
+
+checking whether to enable mod_ssl... configure: error: mod_ssl has been requested but can not be built due to prerequisite failures
+
+
+解决办法：
+
+[root@node01 httpd-2.4.12]# yum install -y openssl-devel
+
+[root@node01 httpd-2.4.12]# make && make install
+
+
+目录介绍：
+
+	/usr/local/apache
+	
+		/usr/local/apache/bin		命令
+		/usr/local/apache/conf		主配置文件 
+		/usr/local/apache/htdocs	网页目录
+		/usr/local/apache/logs		日志文件
+
+
+4) 启动httpd服务 
+
+[root@node01 ~]# /usr/local/apache/bin/apachectl start
+
+[root@node01 ~]# netstat -antp | grep :80
+tcp6       0      0 :::80                   :::*                    LISTEN      2438/httpd    
+
+
+5) 设置httpd服务开机自启动 
+
+[root@web01 ~]# vim /etc/rc.d/rc.local 
+	/usr/local/apache/bin/apachectl start
+[root@web01 ~]# chmod +x /etc/rc.d/rc.local
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

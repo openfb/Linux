@@ -1,0 +1,758 @@
+http
+
+	应用层协议，Hyper Text Transfer Protocol	超文本传输协议 
+	
+	作用：部署web服务器 
+	
+	
+网站：
+	多个网页
+	
+
+	网页类型：
+		静态页面
+			html	div+css 
+				*.html文件
+			JavaScritp, Jquery
+		
+		动态页面
+		
+			一段程序代码，根据客户端传递的参数不同，返回不同的结果 
+			
+			开发语言：
+				php				*.php文件 
+				Java/SSH		*.jsp文件 
+				python
+					Django
+					Flask
+
+
+	URL地址		统一资源定位符 
+	
+		协议://主机名/文件名称
+		
+			http://www.baidu.com/map.jpg
+			
+			https://order.jd.com/center/list.action
+			
+			ftp://10.100.100.252/software/centos7.4
+	
+	
+	URI地址		统一资源标识符 
+	
+		https://club.jd.com/myJdcomments/myJdcomment.action
+
+
+			/myJdcomments/myJdcomment.action
+
+
+		ftp://10.100.100.252/software/centos7.4 
+			
+			/software/centos7.4 
+		
+	
+
+http协议 
+
+版本：
+
+http/0.9
+
+	只能传输文本数据
+		纯文本
+		超链接 
+		
+		
+http/1.0
+
+	1) MIME机制 
+	
+		多用途互联网邮件扩展
+		
+		作用：借助MIME传输非文本数据(图片、视频、动画)
+	
+	2) 缓存机制 		加速网站服务器的访问效率
+	
+		服务器端缓存 
+		客户端缓存 	浏览器
+	
+	
+
+http/1.1 	
+
+	1) 加强了缓存的管理功能 
+	
+		静态数据 
+		过期时间
+		
+	2) 长连接机制  keepalive     加速网站服务器的访问效率
+	
+		http协议    无状态协议 
+		
+		客户端和web服务器间传输一个网页的多个数据时， 只需要建立一次连接
+	
+			a. 长连接的超时时间 
+			b. 长连接传输文件的次数
+			
+			
+http/2.0	
+	
+	
+	
+	
+	
+http状态码
+
+	2xx
+		200		成功的响应
+		
+	3xx		成功的响应
+	
+		重定向 
+		302
+		304
+		
+	4xx		错误 
+	
+		403		权限问题
+		404		文件找不到   路径问题 
+
+	5xx		错误 
+	
+		服务器端错误 
+
+
+
+服务端软件：
+
+	Linux
+		httpd 	
+			Apache 开源软件组织 
+			
+		nginx	Tengine(阿里)
+		
+		Tomcat
+	
+	Window：
+		IIS
+	
+		
+客户端软件：
+
+	firefox, chroome, opera, safaria
+
+
+
+httpd安装 
+
+	特性：
+		1、模块化的软件
+		2、针对每目录授权
+		
+		
+
+	1) rpm格式
+	2) 源码软件 
+	
+	版本：
+		2.4
+		2.2
+		
+		
+[root@web_server yum.repos.d]# yum install -y httpd 
+
+
+		
+相关文件：
+
+	1、存放配置文件 
+	
+		/etc/httpd/conf/httpd.conf 		主配置文件 
+		
+		/etc/httpd/conf.d/*.conf 		子配置文件 
+		
+		/etc/httpd/conf.modules.conf/*.conf 		加载功能模块 
+		
+		
+	2、日志文件 
+	
+		/var/log/httpd 
+			access_log		访问日志
+			error_log		错误日志
+			
+			
+	3、网页目录 
+
+		/var/www/html 
+		
+		
+[root@web_server ~]# systemctl start httpd
+[root@web_server ~]# systemctl enable httpd		
+		
+		
+[root@web_server ~]# netstat -antp | grep httpd
+tcp6       0      0 :::80                   :::*                    LISTEN      1412/httpd          
+[root@web_server ~]# 
+[root@web_server ~]# ps -elf | grep httpd
+4 S root      1412     1  0  80   0 - 56560 poll_s 14:01 ?        00:00:00 /usr/sbin/httpd -DFOREGROUND
+5 S apache    1413  1412  0  80   0 - 56560 inet_c 14:01 ?        00:00:00 /usr/sbin/httpd -DFOREGROUND
+5 S apache    1414  1412  0  80   0 - 56560 inet_c 14:01 ?        00:00:00 /usr/sbin/httpd -DFOREGROUND
+5 S apache    1415  1412  0  80   0 - 56560 inet_c 14:01 ?        00:00:00 /usr/sbin/httpd -DFOREGROUND
+5 S apache    1416  1412  0  80   0 - 56560 inet_c 14:01 ?        00:00:00 /usr/sbin/httpd -DFOREGROUND
+5 S apache    1417  1412  0  80   0 - 56560 inet_c 14:01 ?        00:00:00 /usr/sbin/httpd -DFOREGROUND
+		
+		
+		
+删除自带的测试页面
+
+[root@web_server ~]# rm -rf /etc/httpd/conf.d/welcome.conf 
+[root@web_server ~]# systemctl restart httpd
+		
+		
+		
+		
+		
+配置项：
+
+1、指定网站的首页名称
+
+	DirectoryIndex index.html
+
+		
+2、指定端口号
+
+	Listen 80
+	Listen 192.168.122.101:80
+
+	# ifconfig eth0:1 192.168.122.102/24
+
+3、加载子配置文件 
+
+	Include ......
+	
+4、指定运行子进程的用户
+
+	User www
+	Group www
+	
+5、指定管理员邮箱 
+
+	ServerAdmin cisco_wjc@126.com
+
+6、指定网站的主机名
+
+	ServerName vedio.uplooking.com
+
+7、指定网页目录 
+
+	DocumentRoot "/var/www/html"
+
+8、指定错误日志文件、级别
+
+	ErrorLog "logs/error_log"
+	LogLevel error
+
+	
+9、指定访问日志的存放位置  
+
+	CustomLog "logs/access_log" combined
+	
+	
+10、配置访问日志的日志格式
+
+	LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
+	
+			%h：客户端IP地址
+			%l：客户端系统的用户名 	-
+			%u：客户端访问网页时认证的用户名 
+			%t: 时间
+			%r: http请求中的第一行内容(请求方法  URI地址/文件名称   HTTP协议版本)
+			
+				请求方法：GET, POST, HEAD
+				# curl -I http://192.168.122.101 
+				
+			%>s： http状态码
+			%{Referer}i： 超链接地址 
+			%{User-Agent}i：客户端浏览器类型 
+			
+				
+	PV: Page View  页面访问量 
+		
+		[root@web_server httpd]# grep "21/Dec/2018" access_log | grep " / " | wc -l
+		
+		[root@web_server httpd]# grep "/login.html" access_log  | wc -l
+
+	UV： User View 用户访问量 
+	
+		[root@web_server httpd]# grep "^192.168.122.1 " access_log | wc -l
+
+			
+			
+11、目录授权
+
+	<Directory "目录名称">
+		.....
+		.....
+	</Directory>
+	
+	
+	1) Require指令 
+	
+		a.针对客户端IP做访问控制
+		
+			1) 允许所有客户端访问 
+				Require all granted
+		
+			2) 拒绝所有客户端访问 
+				Require all denied  
+				
+			3) 仅允许特定客户端访问 
+
+				Require ip 1.1.1.1
+		
+			4) 禁止指定的客户端访问 
+			
+				<RequireAll>
+				   Require all granted
+				   Require not ip 192.168.122.171
+				</RequireAll>
+
+		
+		
+		b. 针对用户认证做访问控制
+	
+			示例：用户martin , 密码redhat
+			
+					1) 创建认证用户
+					
+					[root@web_server ~]# htpasswd -c /etc/httpd/.webuser martin
+
+					[root@web_server ~]# htpasswd  /etc/httpd/.webuser robin
+
+			
+					2) 编辑httpd配置文件 
+					
+					[root@web_server ~]# vim /etc/httpd/conf/httpd.conf 
+
+						<Directory "/var/www/html">
+							.....
+							
+							AuthType Basic					//指定认证类型为Basic
+							AuthName "Need to Login: "		//指定说明信息
+							AuthUserFile "/etc/httpd/.webuser"		//指定存放用户的文件
+							Require valid-user						//要求有效的用户；  Require user martin 
+
+						</Directory>
+
+					[root@web_server ~]# systemctl restart httpd
+
+	
+	2) Options
+	
+		a) Indexes	
+			没有首页时，所有页面文件会显示在浏览器里
+			
+		b) FollowSymLinks
+		
+			网页目录存在软链接，可正常访问 
+			
+		c) SymLinksifOwnerMatch
+
+			网页目录存在软链接, 如果该软链接的属主、属组与httpd进程用户一致，允许访问 
+	
+		d) ExecCGI
+		
+			部署动态网站
+	
+		e) MultiViews
+		
+			多视图，多语种的页面显示 
+			
+			
+		f) None 
+
+
+
+12、长连接相关配置
+
+	KeepAlive On 		//启用长连接
+	KeepAliveTimeout 5	//长连接的超时时间，单位秒；支持ms
+	MaxKeepAliveRequests 100	//长连接传输文件的次数
+
+	
+	
+
+13、启用内存映射机制、sendfile机制
+
+	EnableMMAP on
+	EnableSendfile on
+
+
+
+
+
+	
+	
+	
+	
+	
+
+虚拟主机  VirtualHost 
+
+	作用： 在一台服务器上运行多个网站 
+	
+	<VirtualHost IP:Port>
+		ServerName     ....
+		DocumentRoot   .....
+		ErrorLog	   .....
+		CustomLog	   .....
+	</VirtualHost>
+	
+	
+	类型：
+	
+		1、基于主机名的虚拟主机	
+		2、基于IP地址的虚拟主机
+		3、基于端口号的虚拟主机
+
+	
+	注意：
+	
+		httpd配置虚拟主机后，会导致主配置文件网站失效；
+	
+	
+
+示例01：基于主机名的虚拟主机 
+
+	bbs.uplooking.com     网页目录 ：/var/www/html/bbs 		
+	python.uplooking.com  网页目录 ： /opt/python 
+	
+
+bbs网站：
+
+[root@web_server ~]# mkdir /var/www/html/bbs
+[root@web_server ~]# vim /var/www/html/bbs/index.html
+
+[root@web_server ~]# cat /etc/httpd/conf.d/web_bbs.conf
+
+	<VirtualHost 192.168.122.101:80>
+		ServerName bbs.uplooking.com
+		DocumentRoot /var/www/html/bbs
+		ErrorLog /var/log/httpd/bbs_error.log
+		CustomLog /var/log/httpd/bbs_access.log combined
+	</VirtualHost>
+
+[root@web_server ~]# httpd -t		//检测语法
+Syntax OK
+
+
+python网站：
+
+[root@web_server ~]# cat /etc/httpd/conf.d/web_python.conf
+
+
+	<VirtualHost 192.168.122.101:80>
+		ServerName python.uplooking.com
+		DocumentRoot /opt/python
+		ErrorLog /var/log/httpd/python_error.log
+		CustomLog /var/log/httpd/python_access.log combined
+	</VirtualHost>
+
+	<Directory "/opt/python">			//针对网页目录授权
+	   Require all granted 
+	</Directory>
+
+
+
+
+示例01：基于IP地址的虚拟主机
+
+	www.uplooking.com 		网页目录：/opt/www 						192.168.122.102
+	openstack.uplooking.com 		网页目录：/opt/openstack 		192.168.122.103
+
+
+[root@web_server ~]# ifconfig eth0:0 192.168.122.102/24
+[root@web_server ~]# ifconfig eth0:1 192.168.122.103/24
+
+[root@web_server conf.d]# cat web_www.conf 
+
+	<VirtualHost 192.168.122.102:80>
+		ServerName www.uplooking.com
+		DocumentRoot /opt/www
+		ErrorLog /var/log/httpd/www_error.log
+		CustomLog /var/log/httpd/www_access.log combined
+	</VirtualHost>
+
+	<Directory "/opt/www">
+	   Require all granted 
+	</Directory>
+
+[root@web_server conf.d]# cat web_openstack.conf 
+
+	<VirtualHost 192.168.122.103:80>
+		ServerName openstack.uplooking.com
+		DocumentRoot /opt/openstack
+		ErrorLog /var/log/httpd/openstack_error.log
+		CustomLog /var/log/httpd/openstack_access.log combined
+	</VirtualHost>
+
+	<Directory "/opt/openstack">
+	   Require all granted 
+	</Directory>
+
+
+
+
+基于https部署加密的虚拟主机 		www.bj.com 
+
+
+1、安装mod_ssl模块 
+
+[root@web_server ~]# yum install -y mod_ssl 
+
+
+步骤1：生成密钥
+
+[root@web_server ~]# mkdir /etc/httpd/ssl
+
+[root@web_server ~]# openssl genrsa 1024 > /etc/httpd/ssl/server.key
+
+
+
+步骤2: 生成证书请求文件
+
+[root@localhost ~]# openssl req -new -key /etc/httpd/ssl/server.key > /etc/httpd/ssl/server.csr
+
+
+步骤3: 颁发证书
+
+[root@localhost ~]# openssl req -x509 -days 365 -key /etc/httpd/ssl/server.key -in /etc/httpd/ssl/server.csr > /etc/httpd/ssl/server.crt
+
+
+编辑ssl配置文件 
+
+[root@localhost conf.d]# vim /etc/httpd/conf.d/ssl.conf  
+
+	<VirtualHost _default_:443>
+
+	   ServerName www.bj.com
+	   DocumentRoot /opt/bj 
+
+	   SSLCertificateFile /etc/httpd/ssl/server.crt
+	   SSLCertificateKeyFile /etc/httpd/ssl/server.key
+
+	   
+
+	</VirtualHost>
+
+	<Directory "/opt/bj">
+	  Require all granted
+	</Directory>
+
+[root@web_server ~]# mkdir /opt/bj
+[root@web_server ~]# vim /opt/bj/index.html
+
+[root@web_server ~]# httpd -t
+Syntax OK
+
+[root@web_server ~]# systemctl restart httpd
+[root@web_server ~]# netstat -antp | grep httpd
+tcp6       0      0 :::80                   :::*                    LISTEN      15343/httpd         
+tcp6       0      0 :::443                  :::*                    LISTEN      15343/httpd   
+
+
+
+
+
+配置URL重写实现客户端直接通过主机名访问加密网站 
+
+   RewriteEngine On
+   RewriteCond %{HTTP_HOST}  ^www.bj.com		
+   RewriteRule ^/(.*) https://www.bj.com/$1 [L]
+   
+   
+	%{HTTP_HOST}	表示匹配客户端访问的主机名 
+	
+	$1：表示匹配正则表达式中第一个()中的数据 
+	
+	
+	
+	
+
+CGI机制   
+
+	Common Gateway Interface 通用网关接口
+	
+	作用：使web进程借助CGI机制调用其他的应用程序，解析动态页面
+	
+	以php为例 
+	
+	[root@web_server ~]# cat /var/www/html/test.php 
+		<?php
+		   phpinfo();
+		?>
+
+	[root@web_server ~]# yum install -y php 
+	[root@web_server ~]# ls /etc/httpd/modules/
+	
+
+
+
+压力测试
+
+	# ab -n 请求数 -c 并发连接数  URL地址 
+
+[root@web_server ~]# ab -n 1000 -c 100 http://bbs.uplooking.com/index.html 
+	
+	
+	Time taken for tests:   1.496 seconds		//完成所有请求消耗的时间
+	Failed requests:        0					//失败的请求数 
+	Requests per second:    6685.26 [#/sec] (mean)	//每秒可以处理的请求数, 并发连接  qps 
+
+
+	[root@web_server ~]# ulimit -n		//查看进程的文件描述符数量 
+	1024
+	[root@web_server ~]# ulimit -n 65535		//修改
+	[root@web_server ~]# ulimit -n
+	65535
+
+	
+	
+	
+	
+httpd MPM	多进程处理器 
+
+	httpd处理并发连接的方法
+	
+1、prefork	 	
+
+	httpd/2.2版本默认使用的 
+	多进程 
+	预先生成子进程，等待客户端请求
+	
+	
+2、worker   
+
+	多进程、多线程
+	
+	线程间可以共享内存
+
+	产生多个子进程，由每个子进程再产生线程，处理客户端请求
+	
+	兼容性不好，线程安全 
+
+
+3、event   
+
+	多进程、多线程 
+	
+	与worker类似，有一个监控线程，它监控其他线程收到的请求，会把其他线程释放接收更多的请求 
+	
+	http/2.4版本
+
+
+
+查看httpd当前正在使用的MPM
+
+[root@web_server ~]# httpd -V
+Server version: Apache/2.4.6 (CentOS)
+Server built:   Aug  4 2017 03:19:10
+Server's Module Magic Number: 20120211:24
+Server loaded:  APR 1.4.8, APR-UTIL 1.5.2
+Compiled using: APR 1.4.8, APR-UTIL 1.5.2
+Architecture:   64-bit
+Server MPM:     prefork
+
+
+
+
+
+源码编译安装httpd
+
+1、安装apr (httpd的运行环境)
+
+[root@web_server ~]# mkdir /app
+[root@web_server ~]# tar xf apr-1.5.2.tar.gz 
+[root@web_server ~]# cd apr-1.5.2/
+[root@web_server apr-1.5.2]# ./configure --prefix=/app/apr
+[root@web_server apr-1.5.2]# make && make install 
+
+
+2、安装apr-util
+
+[root@web_server ~]# tar xf apr-util-1.5.4.tar.gz 
+[root@web_server ~]# cd apr-util-1.5.4/
+[root@web_server apr-util-1.5.4]# ./configure --prefix=/app/apr-util --with-apr=/app/apr
+[root@web_server apr-util-1.5.4]# make && make install 
+
+
+3、安装httpd
+
+[root@web_server ~]# tar xf httpd-2.4.12.tar.gz 
+[root@web_server ~]# cd httpd-2.4.12/
+[root@web_server httpd-2.4.12]# ./configure \
+> --prefix=/app/httpd \
+> --with-apr=/app/apr \
+> --with-apr-util=/app/apr-util \
+> --enable-so \
+> --enable-rewrite \
+> --enable-ssl \
+> --enable-cgi --enable-cgid \
+> --enable-modules=most \
+> --enable-mods-shared=most \
+> --enable-mpm-shared=all \
+> --with-mpm=event 
+
+[root@web_server httpd-2.4.12]# make && make install 
+
+
+
+4、httpd安装目录介绍 
+
+	/app/httpd/bin 		命令 
+	/app/httpd/conf 	配置文件 
+			extra
+			
+	/app/httpd/htdocs	网页目录 
+	/app/httpd/logs		日志文件 
+	
+	
+5、修改PATH环境变量 
+
+[root@web_server ~]# vim /etc/profile 
+	
+	export PATH=$PATH:/app/httpd/bin 
+	
+[root@web_server ~]# source /etc/profile
+	
+
+启动/停止/重启服务 
+
+[root@web_server ~]# /app/httpd/bin/httpd  -k start|restart|stop
+
+
+设置服务开机自启动
+
+[root@web_server ~]# vim /etc/rc.d/rc.local
+
+	/app/httpd/bin/httpd -k start
+	
+[root@web_server ~]# chmod a+x /etc/rc.d/rc.local
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+   
+   
